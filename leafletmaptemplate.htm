@@ -8,6 +8,11 @@
    integrity="sha512-A7vV8IFfih/D732iSSKi20u/ooOfj/AGehOKq0f4vLT1Zr2Y+RX7C+w8A1gaSasGtRUZpF/NZgzSAu4/Gc41Lg=="
    crossorigin=""></script>
 
+<script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
+
 
 
 
@@ -30,14 +35,110 @@
 
 <div id="mapid"></div>
 
+
+
 <script>
 
+//Instantiate the map
 
 var mymap = L.map('mapid').setView([53.405, -2.4], 13);
 
+/*Background tile layers*/
+
+/*
 var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
 var osm = new L.TileLayer(osmUrl, {minZoom: 8, maxZoom: 12, attribution: osmAttrib}).addTo(mymap);
+
+*/
+
+var CartoDB_Positron = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+	subdomains: 'abcd',
+	maxZoom: 19
+}).addTo(mymap);
+
+
+//###Add the boundary geojson to the map
+
+//set the generic polygon style
+
+var myStyle = {
+    "color": "#ff7800",
+    "weight": 5,
+    "opacity": 0.65
+};
+
+//or set the polygon style based on data
+
+//xxxxxxxxxxxxxxxxxxxxxxxxx
+
+//add the geojson layer to the map
+
+//create empty geojson
+var gm_boundary = new L.geoJson(gm_boundary, {style:myStyle});
+
+//add geojson to map
+gm_boundary.addTo(mymap);
+
+//pull the geojson data in, and push it to the map
+$.getJSON("gmauthoritiessimp2perc4326.geojson",function(data){
+	$(data.features).each(function(key, data) {
+        gm_boundary.addData(data);
+	})
+});
+
+
+//Add markers to the map
+
+/*
+//vanilla markers
+$.getJSON("hospitals.geojson", function(data){
+	L.geoJson(data).addTo(mymap);
+});
+
+*/
+
+//custom markers
+
+$.getJSON("hospitals.geojson", function(data){
+	var hospIcon = L.icon({
+		iconUrl: 'jamiehead.png',
+		iconSize: [30,30]
+	});
+	L.geoJson(data, {
+		pointToLayer: function(feature,latlng){
+			return L.marker(latlng,{icon: hospIcon});
+		}
+	}).addTo(mymap);
+});
+
+//xxxxxxxxxxxxxxxxxxxxxxxxx
+
+//Add a legend
+
+//xxxxxxxxxxxxxxxxxxxxxxxxx
+
+//Add a title
+
+//xxxxxxxxxxxxxxxxxxxxxxxxx
+
+//Add data from an external source
+
+//xxxxxxxxxxxxxxxxxxxxxxxxx
+
+//SPARQL
+
+//xxxxxxxxxxxxxxxxxxxxxxxxx
+
+
+//CSV
+
+//xxxxxxxxxxxxxxxxxxxxxxxxx
+
+//JSON
+
+//xxxxxxxxxxxxxxxxxxxxxxxxx
 
 </script>
 
