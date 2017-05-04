@@ -1,5 +1,8 @@
 <head>
 
+<--Need to insert metadata and google analytics code here-->
+
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"
    integrity="sha512-07I2e+7D8p6he1SIM+1twR5TIrhUQn9+I6yjqD53JQjFiMf8EtC93ty0/5vJTZGF8aAocvHYNEDJajGdNx1IsQ=="
    crossorigin=""/>
@@ -69,14 +72,69 @@ var myStyle = {
     "opacity": 0.65
 };
 
+
+//function that returns the color for of the polygon based on number provided
+function getPolyColor(d) {
+    return d > 12500 ? '#800026' :
+           d > 12000  ? '#BD0026' :
+           d > 11500  ? '#E31A1C' :
+           d > 11000  ? '#FC4E2A' :
+           d > 10500   ? '#FD8D3C' :
+           d > 10000   ? '#FEB24C' :
+           d > 9500  ? '#FED976' :
+                      '#FFEDA0';
+
+}; 
+
+//function to style polygons. A feature gets passed in during the creatio of the geojson, and properties assigned
+function gmpolystyle(feature) {
+    return {
+        fillColor: getPolyColor(feature.properties.HECTARES),
+        weight: 2,
+        opacity: 1,
+        color: 'white',
+        dashArray: '3',
+        fillOpacity: 0.7
+    };
+}
+
 //or set the polygon style based on data
 
 //xxxxxxxxxxxxxxxxxxxxxxxxx
 
 //add the geojson layer to the map
 
-//create empty geojson
-var gm_boundary = new L.geoJson(gm_boundary, {style:myStyle});
+//create empty geojson with the style of the polygons defined by a single set of variables
+//var gm_boundary = new L.geoJson(gm_boundary, {style:myStyle});
+
+/*
+//this block creates empty geojson for polygons, where the style of the polygons is set using a value in the geoJSON, where parameters are hardcoded
+var gm_boundary = new L.geoJson(gm_boundary, {style: function(feature) {
+	var fillColour,
+		size = feature.properties.HECTARES;
+	if(size > 14000) fillColour = '#000000';
+	else if (size >12000) fillColour = '#444444';
+	else if (size >10000) fillColour = '#666666';
+	else if (size > 8000) fillColour= '#bbbbbb';
+	else if (size > 6000) fillColour = '#dddddd';
+	else fillColour= '#ffffff';
+	return { color: "#999", weight:1, fillColor: fillColour, fillOpacity: 0.6};
+},
+onEachFeature: function( feature, layer) {
+	layer.bindPopup("<strong>" + feature.properties.NAME + "</strong>: " + feature.properties.HECTARES)
+}
+})
+*/
+
+//this block creates empty geojson layer for polygons, where the style of the polygons is set using a function to eg colorbrewer.
+
+var gm_boundary = new L.geoJson(gm_boundary, {style: gmpolystyle,
+onEachFeature: function( feature, layer) {
+	layer.bindPopup("<strong>" + feature.properties.NAME + "</strong>: " + feature.properties.HECTARES)
+}
+})
+
+
 
 //add geojson to map
 gm_boundary.addTo(mymap);
@@ -99,19 +157,23 @@ $.getJSON("hospitals.geojson", function(data){
 
 */
 
-//custom markers
+//custom markers including getting the data from a geojson file and a popup
 
-$.getJSON("hospitals.geojson", function(data){
+$.getJSON("hospitalsGM.geojson", function(data){
 	var hospIcon = L.icon({
 		iconUrl: 'jamiehead.png',
 		iconSize: [30,30]
 	});
 	L.geoJson(data, {
 		pointToLayer: function(feature,latlng){
-			return L.marker(latlng,{icon: hospIcon});
-		}
+  			var marker = L.marker(latlng,{icon: hospIcon});
+  			marker.bindPopup(feature.properties.OrganisationName + '<br/>' + feature.properties.SubType);
+  			return marker;
+}
 	}).addTo(mymap);
 });
+
+
 
 //xxxxxxxxxxxxxxxxxxxxxxxxx
 
@@ -124,6 +186,8 @@ $.getJSON("hospitals.geojson", function(data){
 //xxxxxxxxxxxxxxxxxxxxxxxxx
 
 //Add data from an external source
+
+
 
 //xxxxxxxxxxxxxxxxxxxxxxxxx
 
